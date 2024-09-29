@@ -70,19 +70,27 @@ public class PythonObject {
      * @throws PythonAttributeException When there is no attribute on this object with that name.
      */
     public final PythonObject get(String attrName) throws PythonAttributeException {
-        PythonObject attr = attrs.get(attrName);
-        // If the obj does not have the key
-        if (!attrs.containsKey(attrName)) {
-            // If it has a type
-            if (type != null) {
-                // Get attr from type
-                try {
-                    return type.get(attrName);
-                } catch (Exception e) {}
+        // PythonObject attr = attrs.get(attrName);
+        for (PythonObject obj : getMRO()) {
+            if (obj.attrs.containsKey(attrName)) {
+                return obj.attrs.get(attrName);
             }
-            throw new PythonAttributeException(this, attrName);
-        }       
-        return attr;
+        }
+        throw new PythonAttributeException(this, attrName);
+
+        // If the obj does not have the key
+        // if (!attrs.containsKey(attrName)) {
+        //     // If it has a type
+        //     if (type != null) {
+        //         // Get attr from type
+        //         try {
+        //             return type.get(attrName);
+        //         } catch (Exception e) {}
+        //     }
+        //     throw new PythonAttributeException(this, attrName);
+        // }       
+        // return attr;
+
         // throw new UnsupportedOperationException("not implemented yet");
     }
 
