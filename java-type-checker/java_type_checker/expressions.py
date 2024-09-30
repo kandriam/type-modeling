@@ -84,6 +84,7 @@ class JavaAssignment(JavaExpression):
         return self.lhs.static_type()
     
     def check_types(self):
+        self.rhs.check_types()
         if not self.rhs.static_type().is_subtype_of(self.lhs.static_type()):
             raise JavaTypeMismatchError("Cannot assign " + self.rhs.static_type().name + " to variable " +  self.lhs.name +  " of type " + self.lhs.static_type().name)
         return
@@ -112,6 +113,17 @@ class JavaMethodCall(JavaExpression):
 
     def static_type(self):
         return self.receiver.static_type().method_named(self.method_name).return_type
+    
+    def check_types(self):
+        method = self.receiver.static_type().method_named(self.method_name)
+        self.receiver.check_types()
+        if (len(method.parameter_types) != len(self.args)):
+            raise JavaArgumentCountError("Wrong number of arguments for " + self.receiver.static_type().name + "." + self.method_name + "(): expected " + str(len(method.parameter_types)) +", got " + str(len(self.args)))
+        for i in range(len(self.args)):
+            self.args[i].check_types()            
+            if not (self.args[i].static_type().is_subtype_of(method.parameter_types[i])):
+                raise JavaTypeMismatchError(self.receiver.declared_type.name + "." + self.method_name + "() expects arguments of type (" + ", ".join([expected.name for expected in method.parameter_types]) + "), but got ("  + ", ".join([got.static_type().name for got in self.args]) + ")")
+        return
 
 
 
